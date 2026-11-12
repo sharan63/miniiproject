@@ -1,0 +1,306 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Return Book - Digital Library</title>
+    <link rel="stylesheet" href="return.css">
+</head>
+<body>
+    <style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #12372A;
+    color: white;
+}
+
+header {
+    background-color: #09251C;
+    text-align: center;
+    padding: 25px;
+}
+
+header p {
+    margin-top: 10px;
+}
+
+.container {
+    width: 90%;
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 25px;
+    background-color: #245C45;
+    border-radius: 12px;
+}
+
+h2 {
+    margin: 20px 0;
+    color: #BBF7D0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+label {
+    font-weight: bold;
+}
+
+select {
+    padding: 13px;
+    border: 2px solid #86EFAC;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+button {
+    padding: 13px;
+    background-color: #86EFAC;
+    color: #12372A;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #4ADE80;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background-color: white;
+    color: #12372A;
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #D1D5DB;
+    text-align: center;
+}
+
+th {
+    background-color: #09251C;
+    color: white;
+}
+
+#message {
+    margin-top: 18px;
+    color: #BBF7D0;
+    font-weight: bold;
+}
+
+.back {
+    margin-top: 25px;
+    background-color: #09251C;
+    color: white;
+}
+
+@media (max-width: 650px) {
+    .container {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 550px;
+    }
+
+    header h1 {
+        font-size: 20px;
+    }
+}
+
+    </style>
+
+<header>
+    <h1>Digital Library Management System</h1>
+    <p>Return Book Module</p>
+</header>
+
+<div class="container">
+
+    <h2>Return Issued Book</h2>
+
+    <form id="returnForm">
+
+        <label>Select Issued Book</label>
+
+        <select id="issuedBook" required>
+            <option value="">-- Select Issued Book --</option>
+        </select>
+
+        <button type="submit">Return Book</button>
+
+    </form>
+
+    <p id="message"></p>
+
+    <h2>Returned Book Details</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Member Name</th>
+                <th>Book Title</th>
+                <th>Return Date</th>
+            </tr>
+        </thead>
+
+        <tbody id="returnList"></tbody>
+    </table>
+
+    <button class="back" onclick="goDashboard()">
+        Back to Dashboard
+    </button>
+
+</div>
+
+<script>
+
+// Get Data from Local Storage
+let books = JSON.parse(localStorage.getItem("books")) || [];
+let issues = JSON.parse(localStorage.getItem("issues")) || [];
+let returns = JSON.parse(localStorage.getItem("returns")) || [];
+
+// Select HTML Elements
+const issuedBook = document.getElementById("issuedBook");
+const returnForm = document.getElementById("returnForm");
+const message = document.getElementById("message");
+
+// Load Issued Books
+function loadIssuedBooks() {
+
+    issuedBook.innerHTML =
+        '<option value="">-- Select Issued Book --</option>';
+
+    issues.forEach(function(issue, index) {
+
+        let option = document.createElement("option");
+
+        option.value = index;
+        option.textContent =
+            issue.memberName + " - " + issue.bookTitle;
+
+        issuedBook.appendChild(option);
+    });
+}
+
+// Confirm Return
+returnForm.addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    let index = issuedBook.value;
+
+    if (index === "") {
+        message.textContent = "Please select an issued book!";
+        return;
+    }
+
+    let confirmReturn = confirm(
+        "Are you sure you want to return this book?"
+    );
+
+    if (!confirmReturn) {
+        return;
+    }
+
+    // Get Selected Issue Record
+    let issue = issues[Number(index)];
+
+    // Find Original Book
+    let bookIndex = books.findIndex(function(book) {
+        return book.title === issue.bookTitle;
+    });
+
+    if (bookIndex === -1) {
+        message.textContent = "Book record not found!";
+        return;
+    }
+
+    // Increase Book Quantity
+    books[bookIndex].quantity =
+        (Number(books[bookIndex].quantity) || 0) + 1;
+
+    localStorage.setItem("books", JSON.stringify(books));
+
+    // Update Issue Record
+    issues.splice(Number(index), 1);
+
+    localStorage.setItem("issues", JSON.stringify(issues));
+
+    // Save Return Details
+    let returnedBook = {
+        memberName: issue.memberName,
+        bookTitle: issue.bookTitle,
+        returnDate: new Date().toLocaleDateString()
+    };
+
+    returns.push(returnedBook);
+
+    localStorage.setItem("returns", JSON.stringify(returns));
+
+    // Display Success Message
+    message.textContent = "Book Returned Successfully!";
+
+    // Refresh Details
+    loadIssuedBooks();
+    displayReturns();
+
+    returnForm.reset();
+
+});
+
+// Display Returned Books
+function displayReturns() {
+
+    let returnList = document.getElementById("returnList");
+
+    returnList.innerHTML = "";
+
+    returns.forEach(function(item) {
+
+        let row = document.createElement("tr");
+
+        [
+            item.memberName,
+            item.bookTitle,
+            item.returnDate
+        ].forEach(function(value) {
+
+            let cell = document.createElement("td");
+            cell.textContent = value;
+
+            row.appendChild(cell);
+        });
+
+        returnList.appendChild(row);
+    });
+}
+
+// Back to Dashboard
+function goDashboard() {
+
+    window.location.href = "dashboard.html";
+}
+
+// Initial Load
+loadIssuedBooks();
+displayReturns();
+
+</script>
+
+</body>
+</html>
