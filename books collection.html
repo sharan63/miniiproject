@@ -1,0 +1,481 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Library</title>
+</head>
+<body>
+    <style>
+          
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #EAF2F8;
+}
+
+header {
+    background: #173B57;
+    color: white;
+    text-align: center;
+    padding: 25px;
+}
+
+header p {
+    margin-top: 10px;
+}
+
+.container {
+    width: 90%;
+    margin: 30px auto;
+}
+
+.heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+h2 {
+    color: #173B57;
+}
+
+button {
+    background: #138D75;
+    color: white;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0E6655;
+}
+
+.book-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 22px;
+}
+
+.book-card {
+    background: white;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.book-card img {
+    width: 100%;
+    height: 230px;
+    object-fit: contain;
+    background: #F4F6F7;
+    margin-bottom: 12px;
+}
+
+.book-card h3 {
+    color: #173B57;
+    margin-bottom: 10px;
+}
+
+.book-card p {
+    color: #555;
+    margin-bottom: 12px;
+}
+
+#bookForm {
+    display: none;
+    background: white;
+    padding: 25px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+#bookForm h2 {
+    margin-bottom: 15px;
+}
+
+#bookForm input,
+#bookForm textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #bbb;
+    border-radius: 6px;
+    font-family: Arial;
+}
+
+#bookForm textarea {
+    height: 120px;
+    resize: vertical;
+}
+
+.cancel {
+    background: #64748B;
+}
+
+.details {
+    display: none;
+    background: white;
+    padding: 30px;
+    margin: 30px auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+}
+
+.details img {
+    width: 180px;
+    height: 240px;
+    object-fit: contain;
+    display: block;
+    margin: 15px auto;
+}
+
+.details h2 {
+    text-align: center;
+    margin-bottom: 15px;
+}
+
+.details h3 {
+    color: #138D75;
+    margin: 20px 0 10px;
+}
+
+.details p {
+    line-height: 1.8;
+    color: #444;
+    margin: 10px 0;
+}
+
+.back {
+    margin-top: 25px;
+    background: #173B57;
+}
+
+.close {
+    margin-top: 20px;
+}
+
+@media(max-width: 600px) {
+    .container {
+        width: 95%;
+    }
+
+    .heading {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+}
+
+    </style>
+
+<header>
+    <h1>Digital Library Management System</h1>
+    <p>Discover Your Favourite Books</p>
+</header>
+
+<div class="container">
+
+    <div class="heading">
+        <h2>Available Books</h2>
+        <button onclick="showForm()">+ Add Book</button>
+    </div>
+
+    <!-- Add Book Form -->
+    <form id="bookForm">
+        <h2>Add New Book</h2>
+
+        <input type="text" id="title"
+            placeholder="Book Title" required>
+
+        <input type="text" id="author"
+            placeholder="Author Name" required>
+
+        <input type="text" id="category"
+            placeholder="Category" required>
+
+        <input type="number" id="year"
+            placeholder="Published Year" required>
+
+        <textarea id="story"
+            placeholder="Enter Book Story or Description"
+            required></textarea>
+
+        <button type="submit">Save Book</button>
+        <button type="button" class="cancel"
+            onclick="hideForm()">Cancel</button>
+    </form>
+
+    <!-- Book List -->
+    <div id="bookList" class="book-container"></div>
+
+    <!-- Book Story -->
+    <div id="bookDetails" class="details"></div>
+
+    <button class="back" onclick="goDashboard()">
+        Back to Dashboard
+    </button>
+
+</div>
+
+<script>
+
+const defaultBooks = [
+    {
+        id: 1,
+        title: "The Alchemist",
+        author: "Paulo Coelho",
+        category: "Adventure",
+        year: 1988,
+        image: "https://covers.openlibrary.org/b/title/The%20Alchemist-L.jpg",
+        story: "The Alchemist is about a young shepherd named Santiago. He dreams of finding treasure near the Egyptian pyramids. During his journey, he meets different people and learns about courage, hope and following his dreams. The story teaches us to believe in ourselves and never give up on our goals."
+    },
+    {
+        id: 2,
+        title: "Wings of Fire",
+        author: "A.P.J. Abdul Kalam",
+        category: "Autobiography",
+        year: 1999,
+        image: "https://covers.openlibrary.org/b/title/Wings%20of%20Fire-L.jpg",
+        story: "Wings of Fire is the autobiography of Dr. A.P.J. Abdul Kalam. It describes his childhood, education and journey as a scientist. He worked hard in India's space and missile programmes. The book inspires students to dream big, work hard and achieve success through dedication."
+    },
+    {
+        id: 3,
+        title: "The Jungle Book",
+        author: "Rudyard Kipling",
+        category: "Adventure",
+        year: 1894,
+        image: "https://covers.openlibrary.org/b/title/The%20Jungle%20Book-L.jpg",
+        story: "The Jungle Book tells the story of Mowgli, a young boy raised by wolves in the jungle. He learns about friendship and survival from Baloo the bear and Bagheera the panther. His adventures teach lessons about courage, kindness and living together."
+    },
+    {
+        id: 4,
+        title: "Harry Potter",
+        author: "J.K. Rowling",
+        category: "Fantasy",
+        year: 1997,
+        image: "https://covers.openlibrary.org/b/title/Harry%20Potter-L.jpg",
+        story: "Harry Potter is a young boy who discovers that he is a wizard. He joins Hogwarts School of Witchcraft and Wizardry, where he makes friends and learns magic. During his school years, he discovers secrets about his past and faces many challenges."
+    },
+    {
+        id: 5,
+        title: "Rich Dad Poor Dad",
+        author: "Robert Kiyosaki",
+        category: "Finance",
+        year: 1997,
+        image: "https://covers.openlibrary.org/b/title/Rich%20Dad%20Poor%20Dad-L.jpg",
+        story: "This book explains financial education through lessons from two different approaches to money. It discusses saving, investing, assets and financial responsibility. It encourages readers to understand how money works and develop good financial habits."
+    },
+    {
+        id: 6,
+        title: "Atomic Habits",
+        author: "James Clear",
+        category: "Self Help",
+        year: 2018,
+        image: "https://covers.openlibrary.org/b/title/Atomic%20Habits-L.jpg",
+        story: "Atomic Habits explains how small daily improvements can create big changes over time. The book introduces simple ideas for building good habits and reducing unwanted habits. It teaches readers to focus on small steps and consistent progress."
+    },
+    {
+        id: 7,
+        title: "Ponniyin Selvan",
+        author: "Kalki Krishnamurthy",
+        category: "Historical Fiction",
+        year: 1950,
+        image: "https://covers.openlibrary.org/b/title/Ponniyin%20Selvan-L.jpg",
+        story: "Ponniyin Selvan is a famous Tamil historical novel set during the Chola dynasty. It follows Vandiyathevan as he travels through the Chola kingdom and becomes involved in royal secrets, political events and palace mysteries. The novel explores friendship, courage and history."
+    },
+    {
+        id: 8,
+        title: "The Guide",
+        author: "R.K. Narayan",
+        category: "Fiction",
+        year: 1958,
+        image: "https://covers.openlibrary.org/b/title/The%20Guide-L.jpg",
+        story: "The Guide is a novel about Raju, a tourist guide whose life changes through his relationships and unexpected events. The story explores personal change, responsibility and how people see others. It is set in the fictional town of Malgudi."
+    },
+    {
+        id: 9,
+        title: "Think and Grow Rich",
+        author: "Napoleon Hill",
+        category: "Motivation",
+        year: 1937,
+        image: "https://covers.openlibrary.org/b/title/Think%20and%20Grow%20Rich-L.jpg",
+        story: "This motivational book discusses goal setting, determination, planning and positive thinking. It explains how clear goals and consistent effort can help people work towards their ambitions. It encourages readers to develop confidence and persistence."
+    },
+    {
+        id: 10,
+        title: "Computer Fundamentals",
+        author: "P.K. Sinha",
+        category: "Computer Science",
+        year: 2004,
+        image: "https://covers.openlibrary.org/b/title/Computer%20Fundamentals-L.jpg",
+        story: "Computer Fundamentals introduces basic computer concepts. It explains computer hardware, software, memory, input devices, output devices and operating systems. It is useful for students who want to understand how computers work."
+    }
+];
+
+// Load books
+let books = JSON.parse(localStorage.getItem("libraryBooks"));
+
+if (!Array.isArray(books)) {
+    books = defaultBooks;
+    saveBooks();
+}
+
+// Save books
+function saveBooks() {
+    localStorage.setItem("libraryBooks", JSON.stringify(books));
+}
+
+// Display all books
+function displayBooks() {
+    const bookList = document.getElementById("bookList");
+    bookList.innerHTML = "";
+
+    books.forEach(book => {
+        const card = document.createElement("div");
+        card.className = "book-card";
+
+        const img = document.createElement("img");
+        img.src = book.image;
+        img.alt = book.title;
+        img.onerror = function() {
+            this.src = "https://placehold.co/200x260?text=Book";
+        };
+
+        const title = document.createElement("h3");
+        title.textContent = book.title;
+
+        const author = document.createElement("p");
+        author.textContent = "Author: " + book.author;
+
+        const button = document.createElement("button");
+        button.textContent = "Read Book";
+        button.onclick = () => viewBook(book.id);
+
+        card.append(img, title, author, button);
+        bookList.appendChild(card);
+    });
+}
+
+// View full book information and story summary
+function viewBook(id) {
+    const book = books.find(b => b.id === id);
+
+    if (!book) return;
+
+    const details = document.getElementById("bookDetails");
+    details.innerHTML = "";
+
+    const heading = document.createElement("h2");
+    heading.textContent = book.title;
+
+    const img = document.createElement("img");
+    img.src = book.image;
+    img.alt = book.title;
+    img.onerror = function() {
+        this.src = "https://placehold.co/200x260?text=Book";
+    };
+
+    const author = document.createElement("p");
+    author.textContent = "Author: " + book.author;
+
+    const category = document.createElement("p");
+    category.textContent = "Category: " + book.category;
+
+    const year = document.createElement("p");
+    year.textContent = "Published Year: " + book.year;
+
+    const storyHeading = document.createElement("h3");
+    storyHeading.textContent = "Book Story / Content";
+
+    const story = document.createElement("p");
+    story.textContent = book.story;
+
+    const closeButton = document.createElement("button");
+    closeButton.textContent = "Back to Books";
+    closeButton.className = "close";
+    closeButton.onclick = function() {
+        details.style.display = "none";
+        document.getElementById("bookList").scrollIntoView({
+            behavior: "smooth"
+        });
+    };
+
+    details.append(
+        heading, img, author, category,
+        year, storyHeading, story, closeButton
+    );
+
+    details.style.display = "block";
+
+    details.scrollIntoView({
+        behavior: "smooth"
+    });
+}
+
+// Add Book Form
+function showForm() {
+    document.getElementById("bookForm").style.display = "block";
+}
+
+function hideForm() {
+    document.getElementById("bookForm").style.display = "none";
+}
+
+// Add New Book
+document.getElementById("bookForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const newBook = {
+        id: Date.now(),
+        title: document.getElementById("title").value.trim(),
+        author: document.getElementById("author").value.trim(),
+        category: document.getElementById("category").value.trim(),
+        year: Number(document.getElementById("year").value),
+        image: "https://placehold.co/200x260?text=New+Book",
+        story: document.getElementById("story").value.trim()
+    };
+
+    if (
+        !newBook.title ||
+        !newBook.author ||
+        !newBook.category ||
+        !newBook.story ||
+        !Number.isInteger(newBook.year) ||
+        newBook.year < 1 ||
+        newBook.year > new Date().getFullYear()
+    ) {
+        alert("Please enter valid book details!");
+        return;
+    }
+
+    books.push(newBook);
+    saveBooks();
+    displayBooks();
+
+    this.reset();
+    hideForm();
+
+    alert("Book Added Successfully!");
+});
+
+// Dashboard
+function goDashboard() {
+    window.location.href = "dashboard.html";
+}
+
+displayBooks();
+
+</script>
+</body>
+</html>
