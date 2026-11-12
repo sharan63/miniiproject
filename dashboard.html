@@ -1,0 +1,155 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Digital Library Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #09203F, #537895);
+    min-height: 100vh;
+}
+
+header {
+    background: #101D35;
+    color: white;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+header button {
+    background: #FFB703;
+    color: #102A43;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.dashboard {
+    text-align: center;
+    padding: 50px 20px;
+}
+
+.dashboard h2 {
+    color: white;
+    font-size: 30px;
+    margin-bottom: 10px;
+}
+
+.dashboard p {
+    color: #E0F2FE;
+    margin-bottom: 30px;
+}
+
+.modules {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 25px;
+}
+
+.card {
+    background: #FFFFFF;
+    width: 220px;
+    padding: 35px 20px;
+    border-radius: 15px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    transition: 0.3s;
+}
+
+.card h3 {
+    color: #12304A;
+    margin-bottom: 12px;
+}
+
+.card p {
+    color: #537895;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    background: #DFF6FF;
+}
+
+@media (max-width: 600px) {
+    header h1 {
+        font-size: 18px;
+    }
+
+    .card {
+        width: 100%;
+    }
+}
+
+</style>
+
+    <header>
+        <h1>Digital Library Management System</h1>
+        <button onclick="logout()">Logout</button>
+    </header>
+
+    <div class="dashboard">
+        <h2>Welcome to Dashboard</h2>
+        <p>Select Your Required Module</p>
+
+        <div class="modules">
+
+            
+            <div class="card" onclick="openPage('books collection.html')">
+                <h3>Books Collection</h3>
+                <p>Manage Books</p>
+            </div>
+
+            <div class="card" onclick="openPage('books.html')">
+                <h3>Books</h3>
+                <p>Manage Books</p>
+            </div>
+
+            <div class="card" onclick="openPage('member.html')">
+                <h3>Members</h3>
+                <p>Manage Members</p>
+            </div>
+
+            <div class="card" onclick="openPage('issue.html')">
+                <h3>Issue Book</h3>
+                <p>Issue Books</p>
+            </div>
+
+            <div class="card" onclick="openPage('return.html')">
+                <h3>Return Book</h3>
+                <p>Return Books</p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+
+function openPage(page) {
+    window.location.href = page;
+}
+
+function logout() {
+    alert("Logout Successful!");
+    window.location.href = "login.html";
+}
+
+    </script>
+
+</body>
+</html>
