@@ -1,0 +1,371 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Library - Book Management</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #103B3B;
+    color: white;
+}
+
+header {
+    background-color: #092B2B;
+    text-align: center;
+    padding: 25px;
+}
+
+header h1 {
+    margin-bottom: 10px;
+}
+
+.container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 30px auto;
+    padding: 25px;
+    background-color: #175B52;
+    border-radius: 12px;
+}
+
+h2 {
+    margin: 20px 0;
+    color: #A7F3D0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+input {
+    padding: 13px;
+    border: 2px solid #2DD4A7;
+    border-radius: 6px;
+    outline: none;
+    font-size: 15px;
+}
+
+input:focus {
+    border-color: white;
+}
+
+button {
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: #2DD4A7;
+    color: #092B2B;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.85;
+}
+
+.clear {
+    background-color: #CBD5E1;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background-color: white;
+    color: #103B3B;
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #D1D5DB;
+    text-align: center;
+}
+
+th {
+    background-color: #092B2B;
+    color: white;
+}
+
+.edit {
+    background-color: #FBBF24;
+    margin: 3px;
+}
+
+.delete {
+    background-color: #F87171;
+    margin: 3px;
+}
+
+.back {
+    margin-top: 25px;
+    background-color: #092B2B;
+    color: white;
+}
+
+#message {
+    margin-top: 15px;
+    color: #A7F3D0;
+    font-weight: bold;
+}
+
+@media (max-width: 650px) {
+    .container {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    header h1 {
+        font-size: 20px;
+    }
+}
+
+    </style>
+
+<header>
+    <h1>Digital Library Management System</h1>
+    <p>Book Management Module</p>
+</header>
+
+<div class="container">
+
+    <h2>Add Book Details</h2>
+
+    <form id="bookForm">
+
+        <input type="hidden" id="bookId">
+
+        <input type="text" id="title"
+            placeholder="Enter Book Title" required>
+
+        <input type="text" id="author"
+            placeholder="Enter Author Name" required>
+
+        <input type="text" id="category"
+            placeholder="Enter Book Category" required>
+
+        <input type="number" id="year"
+            placeholder="Enter Published Year"
+            min="1000" max="2026" required>
+
+        <button type="submit" id="saveBtn">
+            Add Book
+        </button>
+
+        <button type="button" class="clear"
+            onclick="clearForm()">
+            Clear
+        </button>
+
+    </form>
+
+    <p id="message"></p>
+
+    <h2>Book List</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Author</th>
+                <th>Category</th>
+                <th>Year</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+
+        <tbody id="bookList"></tbody>
+    </table>
+
+    <button class="back" onclick="goDashboard()">
+        Back to Dashboard
+    </button>
+
+</div>
+
+<script>
+
+// Get Books from Local Storage
+let books = JSON.parse(localStorage.getItem("books")) || [];
+
+// Add and Update Book
+document.getElementById("bookForm")
+.addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    let id = document.getElementById("bookId").value;
+
+    let title = document.getElementById("title").value.trim();
+    let author = document.getElementById("author").value.trim();
+    let category = document.getElementById("category").value.trim();
+    let year = Number(document.getElementById("year").value);
+
+    // Validate Input
+    if (!title || !author || !category ||
+        !Number.isInteger(year) ||
+        year < 1000 ||
+        year > new Date().getFullYear()) {
+
+        alert("Please enter valid book details!");
+        return;
+    }
+
+    let book = {
+        title: title,
+        author: author,
+        category: category,
+        year: year
+    };
+
+    // Add Book
+    if (id === "") {
+
+        books.push(book);
+
+        showMessage("Book Added Successfully!");
+
+    } else {
+
+        // Update Book
+        books[Number(id)] = book;
+
+        showMessage("Book Updated Successfully!");
+    }
+
+    // Save into Local Storage
+    localStorage.setItem("books", JSON.stringify(books));
+
+    clearForm();
+    displayBooks();
+});
+
+
+// Display Book List
+function displayBooks() {
+
+    let bookList = document.getElementById("bookList");
+
+    bookList.innerHTML = "";
+
+    books.forEach(function(book, index) {
+
+        let row = document.createElement("tr");
+
+        [book.title, book.author, book.category, book.year]
+        .forEach(function(value) {
+            let cell = document.createElement("td");
+            cell.textContent = value;
+            row.appendChild(cell);
+        });
+
+        let actionCell = document.createElement("td");
+
+        let editButton = document.createElement("button");
+        editButton.textContent = "Edit";
+        editButton.className = "edit";
+        editButton.onclick = function() {
+            editBook(index);
+        };
+
+        let deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.className = "delete";
+        deleteButton.onclick = function() {
+            deleteBook(index);
+        };
+
+        actionCell.append(editButton, deleteButton);
+        row.appendChild(actionCell);
+
+        bookList.appendChild(row);
+    });
+}
+
+
+// Edit Book
+function editBook(index) {
+
+    let book = books[index];
+
+    document.getElementById("bookId").value = index;
+    document.getElementById("title").value = book.title;
+    document.getElementById("author").value = book.author;
+    document.getElementById("category").value = book.category;
+    document.getElementById("year").value = book.year;
+
+    document.getElementById("saveBtn").textContent = "Update Book";
+
+    showMessage("Edit your book details.");
+}
+
+
+// Delete Book
+function deleteBook(index) {
+
+    let confirmDelete = confirm(
+        "Are you sure you want to delete this book?"
+    );
+
+    if (confirmDelete) {
+
+        books.splice(index, 1);
+
+        localStorage.setItem("books", JSON.stringify(books));
+
+        displayBooks();
+
+        showMessage("Book Deleted Successfully!");
+    }
+}
+
+
+// Clear Form
+function clearForm() {
+
+    document.getElementById("bookForm").reset();
+
+    document.getElementById("bookId").value = "";
+
+    document.getElementById("saveBtn").textContent = "Add Book";
+}
+
+
+// Success Message
+function showMessage(text) {
+
+    document.getElementById("message").textContent = text;
+}
+
+
+// Back to Dashboard
+function goDashboard() {
+
+    window.location.href = "dashboard.html";
+}
+
+
+// Load Books
+displayBooks();
+
+</script>
+
+</body>
+</html>
