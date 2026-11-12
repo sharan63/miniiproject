@@ -1,0 +1,321 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Issue Book - Digital Library</title>
+    <link rel="stylesheet" href="issue.css">
+</head>
+<body>
+    <style>
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #32152D;
+    color: white;
+}
+
+header {
+    background-color: #210D1E;
+    text-align: center;
+    padding: 25px;
+}
+
+header p {
+    margin-top: 10px;
+}
+
+.container {
+    width: 90%;
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 25px;
+    background-color: #582C4D;
+    border-radius: 12px;
+}
+
+h2 {
+    margin: 20px 0;
+    color: #F5D0FE;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+label {
+    font-weight: bold;
+}
+
+select {
+    padding: 13px;
+    border: 2px solid #F0ABFC;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+button {
+    padding: 13px;
+    background-color: #F0ABFC;
+    color: #32152D;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #E879F9;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background-color: white;
+    color: #32152D;
+}
+
+th, td {
+    padding: 12px;
+    border: 1px solid #DDD;
+    text-align: center;
+}
+
+th {
+    background-color: #210D1E;
+    color: white;
+}
+
+#message {
+    margin-top: 18px;
+    color: #A7F3D0;
+    font-weight: bold;
+}
+
+.back {
+    margin-top: 25px;
+    background-color: #210D1E;
+    color: white;
+}
+
+@media (max-width: 650px) {
+    .container {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 550px;
+    }
+
+    header h1 {
+        font-size: 20px;
+    }
+}
+
+    </style>
+
+<header>
+    <h1>Digital Library Management System</h1>
+    <p>Issue Book Module</p>
+</header>
+
+<div class="container">
+
+    <h2>Issue Book</h2>
+
+    <form id="issueForm">
+
+        <label>Select Member</label>
+        <select id="member" required>
+            <option value="">-- Select Member --</option>
+        </select>
+
+        <label>Select Book</label>
+        <select id="book" required>
+            <option value="">-- Select Book --</option>
+        </select>
+
+        <button type="submit">Issue Book</button>
+
+    </form>
+
+    <p id="message"></p>
+
+    <h2>Issued Book Details</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Member</th>
+                <th>Book</th>
+                <th>Issue Date</th>
+            </tr>
+        </thead>
+        <tbody id="issueList"></tbody>
+    </table>
+
+    <button class="back" onclick="goDashboard()">
+        Back to Dashboard
+    </button>
+
+</div>
+
+<script>
+
+// Get Data from Local Storage
+let members = JSON.parse(localStorage.getItem("members")) || [];
+let books = JSON.parse(localStorage.getItem("books")) || [];
+let issues = JSON.parse(localStorage.getItem("issues")) || [];
+
+// For older book records without quantity,
+// assume one copy is available.
+books.forEach(function(book) {
+    if (book.quantity === undefined) {
+        book.quantity = 1;
+    }
+});
+
+localStorage.setItem("books", JSON.stringify(books));
+
+// Select HTML Elements
+const memberSelect = document.getElementById("member");
+const bookSelect = document.getElementById("book");
+const issueForm = document.getElementById("issueForm");
+const message = document.getElementById("message");
+
+// Load Members
+function loadMembers() {
+
+    members.forEach(function(member, index) {
+
+        let option = document.createElement("option");
+
+        option.value = index;
+        option.textContent = member.name;
+
+        memberSelect.appendChild(option);
+    });
+}
+
+// Load Books
+function loadBooks() {
+
+    books.forEach(function(book, index) {
+
+        let option = document.createElement("option");
+
+        option.value = index;
+        option.textContent =
+            book.title + " (Available: " + book.quantity + ")";
+
+        bookSelect.appendChild(option);
+    });
+}
+
+// Issue Book
+issueForm.addEventListener("submit", function(event) {
+
+    event.preventDefault();
+
+    let memberIndex = memberSelect.value;
+    let bookIndex = bookSelect.value;
+
+    // Validate Selection
+    if (memberIndex === "" || bookIndex === "") {
+        message.textContent = "Please select member and book!";
+        return;
+    }
+
+    let member = members[Number(memberIndex)];
+    let book = books[Number(bookIndex)];
+
+    // Check Book Availability
+    if (!member || !book) {
+        message.textContent = "Invalid member or book selection!";
+        return;
+    }
+
+    if (book.quantity <= 0) {
+
+        message.textContent = "Sorry! Book is Not Available.";
+
+        return;
+    }
+
+    // Decrease Book Quantity
+    book.quantity--;
+
+    localStorage.setItem("books", JSON.stringify(books));
+
+    // Save Issue Details
+    let issue = {
+        memberName: member.name,
+        bookTitle: book.title,
+        issueDate: new Date().toLocaleDateString()
+    };
+
+    issues.push(issue);
+
+    localStorage.setItem("issues", JSON.stringify(issues));
+
+    // Display Success Message
+    message.textContent = "Book Issued Successfully!";
+
+    // Update Book List and Issue List
+    bookSelect.innerHTML =
+        '<option value="">-- Select Book --</option>';
+
+    loadBooks();
+    displayIssues();
+
+    issueForm.reset();
+});
+
+// Display Issued Books
+function displayIssues() {
+
+    let issueList = document.getElementById("issueList");
+
+    issueList.innerHTML = "";
+
+    issues.forEach(function(issue) {
+
+        let row = document.createElement("tr");
+
+        [issue.memberName, issue.bookTitle, issue.issueDate]
+        .forEach(function(value) {
+
+            let cell = document.createElement("td");
+            cell.textContent = value;
+
+            row.appendChild(cell);
+        });
+
+        issueList.appendChild(row);
+    });
+}
+
+// Back to Dashboard
+function goDashboard() {
+    window.location.href = "dashboard.html";
+}
+
+// Initial Load
+loadMembers();
+loadBooks();
+displayIssues();
+
+</script>
+
+</body>
+</html>
